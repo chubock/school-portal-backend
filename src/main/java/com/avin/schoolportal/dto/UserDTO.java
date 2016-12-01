@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Created by Yubar on 10/23/2016.
  */
-public class UserDTO implements AbstractDTO<User> {
+public abstract class UserDTO implements AbstractDTO<User> {
 
     private long id;
     @NotNull(groups = SchoolRegistration.class)
@@ -26,24 +26,7 @@ public class UserDTO implements AbstractDTO<User> {
     @NotNull(groups = SchoolRegistration.class)
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$", groups = SchoolRegistration.class)
     private String password;
-    @NotNull(groups = {
-            SchoolRegistration.class,
-            EmployeeRegistration.class,
-            StudentRegistration.class
-    })
-    @Valid
-    private PersonDTO person;
-    @Pattern(regexp = "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$", groups = {
-            SchoolRegistration.class,
-            EmployeeRegistration.class,
-            StudentRegistration.class
-    })
-    private String email;
-    @Pattern(regexp = "09\\d{9}")
-    private String phoneNumber;
-    private SchoolDTO school;
-    private List<Role> roles = new ArrayList<>();
-    private boolean enabled;
+    private boolean enabled = true;
     private boolean expired;
     private boolean locked;
     private boolean passwordExpired;
@@ -54,17 +37,13 @@ public class UserDTO implements AbstractDTO<User> {
 
     public UserDTO(User user) {
         if (user != null) {
-            this.id = user.getId();
-            this.username = user.getUsername();
-            this.email = user.getEmail();
-            this.phoneNumber = user.getPhoneNumber();
-            this.enabled = user.isEnabled();
-            this.locale = user.getLocale();
-            this.expired = user.isExpired();
-            this.locked = user.isLocked();
-            this.passwordExpired = user.isPasswordExpired();
-            this.person = new PersonDTO(user.getPerson());
-            this.school = new SchoolDTO(user.getSchool());
+            setId(user.getId());
+            setUsername(user.getUsername());
+            setEnabled(user.isEnabled());
+            setLocale(user.getLocale());
+            setLocked(user.isLocked());
+            setPasswordExpired(user.isPasswordExpired());
+            setExpired(user.isExpired());
         }
     }
 
@@ -90,46 +69,6 @@ public class UserDTO implements AbstractDTO<User> {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public PersonDTO getPerson() {
-        return person;
-    }
-
-    public void setPerson(PersonDTO person) {
-        this.person = person;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public SchoolDTO getSchool() {
-        return school;
-    }
-
-    public void setSchool(SchoolDTO school) {
-        this.school = school;
-    }
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
     }
 
     public boolean isEnabled() {
@@ -173,16 +112,18 @@ public class UserDTO implements AbstractDTO<User> {
     }
 
     @Override
-    public User convert() {
-        User user = new User(getUsername(), getPassword());
+    public abstract User convert();
+
+    protected User convert(User user) {
+        user.setUsername(getUsername());
+        user.setPassword(getPassword());
         user.setId(getId());
-        user.setEmail(getEmail());
-        user.setRoles(getRoles());
         user.setLocale(getLocale());
-        if (getPerson() != null)
-            user.setPerson(getPerson().convert());
-        if (getSchool() != null)
-            user.setSchool(getSchool().convert());
+        user.setLocked(isLocked());
+        user.setExpired(isExpired());
+        user.setPasswordExpired(isPasswordExpired());
+        user.setEnabled(isEnabled());
         return user;
     }
+
 }

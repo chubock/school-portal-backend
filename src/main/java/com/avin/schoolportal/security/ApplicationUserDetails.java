@@ -1,6 +1,6 @@
 package com.avin.schoolportal.security;
 
-import com.avin.schoolportal.domain.User;
+import com.avin.schoolportal.domain.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,7 +23,16 @@ public class ApplicationUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.name())));
+        if (user instanceof Manager)
+            authorities.add(new SimpleGrantedAuthority("MANAGER"));
+        else if (user instanceof Manciple)
+            authorities.add(new SimpleGrantedAuthority("MANCIPLE"));
+        else if (user instanceof Teacher)
+            authorities.add(new SimpleGrantedAuthority("TEACHER"));
+        else if (user instanceof Parent)
+            authorities.add(new SimpleGrantedAuthority("PARENT"));
+        else if (user instanceof Student)
+            authorities.add(new SimpleGrantedAuthority("STUDENT"));
         return authorities;
     }
 

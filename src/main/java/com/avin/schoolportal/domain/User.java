@@ -16,7 +16,8 @@ import java.util.List;
 
 @Entity(name = "User")
 @Table(name = "USERS")
-public class User implements Serializable {
+@Inheritance
+public abstract class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,22 +26,6 @@ public class User implements Serializable {
     private String username;
     @NotNull
     private String password;
-    @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Person person;
-    @Pattern(regexp = "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$")
-    @Column(nullable = false)
-    private String email;
-    @Pattern(regexp = "09\\d{9}")
-    private String phoneNumber;
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    private School school;
-    @Enumerated(EnumType.STRING)
-    @ElementCollection
-    @CollectionTable(name = "USER_ROLES",joinColumns = @JoinColumn(name = "USERNAME"))
-    @Column(name = "ROLE")
-    private List<Role> roles = new ArrayList<>();
     @Column(nullable = false)
     private boolean enabled = true;
     @Column(nullable = false)
@@ -49,7 +34,6 @@ public class User implements Serializable {
     private boolean locked = false;
     @Column(nullable = false)
     private boolean passwordExpired = false;
-
     private String locale = "fa";
 
     public User() {
@@ -86,46 +70,6 @@ public class User implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Person getPerson() {
-        return person;
-    }
-
-    public void setPerson(Person person) {
-        this.person = person;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public School getSchool() {
-        return school;
-    }
-
-    public void setSchool(School school) {
-        this.school = school;
-    }
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
     }
 
     public boolean isEnabled() {
@@ -186,12 +130,6 @@ public class User implements Serializable {
             return false;
         if (getPassword() != null ? !getPassword().equals(user.getPassword()) : user.getPassword() != null)
             return false;
-        if (getPerson() != null ? !getPerson().equals(user.getPerson()) : user.getPerson() != null) return false;
-        if (getEmail() != null ? !getEmail().equals(user.getEmail()) : user.getEmail() != null) return false;
-        if (getPhoneNumber() != null ? !getPhoneNumber().equals(user.getPhoneNumber()) : user.getPhoneNumber() != null)
-            return false;
-        if (getSchool() != null ? !getSchool().equals(user.getSchool()) : user.getSchool() != null) return false;
-        if (getRoles() != null ? !getRoles().equals(user.getRoles()) : user.getRoles() != null) return false;
         return getLocale() != null ? getLocale().equals(user.getLocale()) : user.getLocale() == null;
 
     }
@@ -201,11 +139,6 @@ public class User implements Serializable {
         int result = (int) (getId() ^ (getId() >>> 32));
         result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
         result = 31 * result + (getPassword() != null ? getPassword().hashCode() : 0);
-        result = 31 * result + (getPerson() != null ? getPerson().hashCode() : 0);
-        result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
-        result = 31 * result + (getPhoneNumber() != null ? getPhoneNumber().hashCode() : 0);
-        result = 31 * result + (getSchool() != null ? getSchool().hashCode() : 0);
-        result = 31 * result + (getRoles() != null ? getRoles().hashCode() : 0);
         result = 31 * result + (isEnabled() ? 1 : 0);
         result = 31 * result + (isExpired() ? 1 : 0);
         result = 31 * result + (isLocked() ? 1 : 0);

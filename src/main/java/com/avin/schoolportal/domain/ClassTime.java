@@ -19,7 +19,7 @@ public class ClassTime implements Serializable {
     private Classroom classroom;
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
-    private Employee teacher;
+    private Teacher teacher;
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
     private Study study;
@@ -31,12 +31,12 @@ public class ClassTime implements Serializable {
         this.classroom = classroom;
     }
 
-    public ClassTime(Classroom classroom, Employee teacher) {
+    public ClassTime(Classroom classroom, Teacher teacher) {
         this.classroom = classroom;
         this.teacher = teacher;
     }
 
-    public ClassTime(Classroom classroom, Employee teacher, Study study) {
+    public ClassTime(Classroom classroom, Teacher teacher, Study study) {
         this.classroom = classroom;
         this.teacher = teacher;
         this.study = study;
@@ -58,11 +58,11 @@ public class ClassTime implements Serializable {
         this.classroom = classroom;
     }
 
-    public Employee getTeacher() {
+    public Teacher getTeacher() {
         return teacher;
     }
 
-    public void setTeacher(Employee teacher) {
+    public void setTeacher(Teacher teacher) {
         this.teacher = teacher;
     }
 

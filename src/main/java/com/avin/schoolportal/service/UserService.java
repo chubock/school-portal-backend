@@ -5,6 +5,7 @@ import com.avin.schoolportal.domain.Person;
 import com.avin.schoolportal.domain.Role;
 import com.avin.schoolportal.domain.User;
 import com.avin.schoolportal.repository.PersonRepository;
+import com.avin.schoolportal.repository.SchoolUserRepository;
 import com.avin.schoolportal.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -35,8 +36,6 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 @Transactional
 public class UserService {
 
-    @Autowired
-    PersonRepository personRepository;
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
@@ -72,50 +71,6 @@ public class UserService {
     @Async
     public void sendPasswordEmail(String email, String password) {
         sendMail(email, "Generated Password", "Generated password is : " + password);
-    }
-
-    @Async
-    public void sendRegistrationEmail(User user, String password) {
-        sendMail(user.getEmail(), "Registration Details", "User registration is complete. username : " + user.getUsername() + " ,password : " + password);
-    }
-
-    @PreAuthorize("hasPermission(#user, 'CREATE')")
-    public User registerUser(User user) {
-        Person person = user.getPerson();
-        if (person.getId() == 0)
-            person = personRepository.save(person);
-        else
-            person = personRepository.findOne(person.getId());
-        user.setPerson(person);
-        user.setPassword(encodePassword(generatePassword()));
-        user.setPasswordExpired(true);
-        user = userRepository.save(user);
-        userRepository.refresh(user);
-        return user;
-    }
-
-    @PreAuthorize("hasPermission(#user, 'UPDATE')")
-    public User updateUser(User user) {
-        User u = userRepository.findByUsername(user.getUsername());
-        u.setEmail(user.getEmail());
-        u.setPhoneNumber(user.getPhoneNumber());
-        u.setLocale(user.getLocale());
-        Person person;
-        if (user.getPerson().getId() == 0) {
-            person = personRepository.save(user.getPerson());
-        } else {
-            person = personRepository.findOne(user.getPerson().getId());
-        }
-        u.setPerson(person);
-        return u;
-    }
-
-    @PreAuthorize("hasAuthority('MANAGER') AND hasPermission(#username, 'User', 'UPDATE')")
-    public User updateUserRoles(String username, List<Role> roles) {
-        User user = userRepository.findByUsername(username);
-        user.getRoles().clear();
-        user.getRoles().addAll(roles);
-        return user;
     }
 
     public void changePassword(String username, String currentPassword, String newPassword) throws IllegalAccessException {

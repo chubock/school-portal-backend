@@ -12,6 +12,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  */
 public interface StudentRepository extends PagingAndSortingRepository<Student, Long>, JpaSpecificationExecutor<Student> {
 
-    @EntityGraph(attributePaths = {"user", "course", "classroom"})
-    Student findByUser(User user);
+    @EntityGraph(attributePaths = {"person", "course", "classroom"})
+    Student findByUsername(String username);
 }

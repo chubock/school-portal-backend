@@ -20,7 +20,7 @@ public class JpaUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userRepository.findOneWithRoles(s);
+        User user = userRepository.findByUsername(s);
         if (user == null)
             throw new UsernameNotFoundException("No User Found for : " + s);
         return user == null ? null : new ApplicationUserDetails(user);

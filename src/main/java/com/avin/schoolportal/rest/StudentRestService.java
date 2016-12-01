@@ -1,12 +1,12 @@
 package com.avin.schoolportal.rest;
 
-import com.avin.schoolportal.domain.Employee;
+import com.avin.schoolportal.domain.SchoolUser;
 import com.avin.schoolportal.domain.Student;
-import com.avin.schoolportal.domain.User;
 import com.avin.schoolportal.dto.*;
+import com.avin.schoolportal.repository.SchoolUserRepository;
 import com.avin.schoolportal.repository.StudentRepository;
-import com.avin.schoolportal.repository.UserRepository;
 import com.avin.schoolportal.service.MancipleService;
+import com.avin.schoolportal.service.SchoolUserService;
 import com.avin.schoolportal.service.UserService;
 import com.avin.schoolportal.specification.StudentSpecification;
 import com.avin.schoolportal.validationgroups.StudentRegistration;
@@ -32,7 +32,7 @@ public class StudentRestService {
     StudentRepository studentRepository;
 
     @Autowired
-    UserRepository userRepository;
+    SchoolUserRepository schoolUserRepository;
 
     @Autowired
     MancipleService mancipleService;
@@ -40,17 +40,19 @@ public class StudentRestService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    SchoolUserService schoolUserService;
+
     @PreAuthorize("hasAuthority('MANCIPLE')")
     @RequestMapping(method = RequestMethod.GET)
     public Page<StudentDTO> getStudents(@RequestParam Map<String, String> params, Pageable pageable, Principal principal) {
-        User user = userRepository.findByUsername(principal.getName());
+        SchoolUser user = schoolUserRepository.findByUsername(principal.getName());
         Page<Student> students = studentRepository.findAll(new StudentSpecification(params, user.getSchool()), pageable);
         return students.map(student -> {
             StudentDTO studentDTO = new StudentDTO(student);
             studentDTO.setCourse(new CourseDTO(student.getCourse()));
             studentDTO.setClassroom(new ClassroomDTO(student.getClassroom()));
-            studentDTO.setUser(new UserDTO(student.getUser()));
-            studentDTO.getUser().setPerson(new PersonDTO(student.getUser().getPerson()));
+            studentDTO.setPerson(new PersonDTO(student.getPerson()));
             return studentDTO;
         });
     }
@@ -58,13 +60,11 @@ public class StudentRestService {
     @PreAuthorize("isAuthenticated")
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public StudentDTO getStudent(Principal principal) {
-        User user = userRepository.findByUsername(principal.getName());
-        Student student = studentRepository.findByUser(user);
+        Student student = studentRepository.findByUsername(principal.getName());
         StudentDTO studentDTO = new StudentDTO(student);
         studentDTO.setCourse(new CourseDTO(student.getCourse()));
         studentDTO.setClassroom(new ClassroomDTO(student.getClassroom()));
-        studentDTO.setUser(new UserDTO(student.getUser()));
-        studentDTO.getUser().setPerson(new PersonDTO(student.getUser().getPerson()));
+        studentDTO.setPerson(new PersonDTO(student.getPerson()));
         return studentDTO;
     }
 
@@ -75,42 +75,37 @@ public class StudentRestService {
         StudentDTO studentDTO = new StudentDTO(student);
         studentDTO.setCourse(new CourseDTO(student.getCourse()));
         studentDTO.setClassroom(new ClassroomDTO(student.getClassroom()));
-        studentDTO.setUser(new UserDTO(student.getUser()));
-        studentDTO.getUser().setPerson(new PersonDTO(student.getUser().getPerson()));
+        studentDTO.setPerson(new PersonDTO(student.getPerson()));
         return studentDTO;
     }
 
     @PreAuthorize("hasAuthority('MANCIPLE')")
     @RequestMapping(method = RequestMethod.POST)
     public StudentDTO registerStudent(@Validated(StudentRegistration.class) @RequestBody StudentDTO studentDTO, Principal principal) {
-        User user = userRepository.findByUsername(principal.getName());
+        SchoolUser user = schoolUserRepository.findByUsername(principal.getName());
         Student student = studentDTO.convert();
         student.setSchool(user.getSchool());
         student = mancipleService.registerStudent(student);
-        String studentPassword = userService.resetPassword(student.getUser().getUsername());
-        userService.sendRegistrationEmail(student.getUser(), studentPassword);
-        String parentPassword = userService.resetPassword(student.getParent().getUser().getUsername());
-        userService.sendRegistrationEmail(student.getParent().getUser(), parentPassword);
+        String studentPassword = userService.resetPassword(student.getUsername());
+        schoolUserService.sendRegistrationEmail(student, studentPassword);
+        String parentPassword = userService.resetPassword(student.getParent().getUsername());
+        schoolUserService.sendRegistrationEmail(student.getParent(), parentPassword);
         StudentDTO ret = new StudentDTO(student);
-        ret.setUser(new UserDTO(student.getUser()));
-        ret.getUser().setPerson(new PersonDTO(student.getUser().getPerson()));
+        ret.setPerson(new PersonDTO(student.getPerson()));
         ret.setParent(new ParentDTO(student.getParent()));
-        ret.getParent().setUser(new UserDTO(student.getParent().getUser()));
-        ret.getParent().getUser().setPerson(new PersonDTO(student.getParent().getUser().getPerson()));
+        ret.getParent().setPerson(new PersonDTO(student.getParent().getPerson()));
         return ret;
     }
 
     @PreAuthorize("hasPermission(#studentDTO.id, 'Student', 'UPDATE')")
     @RequestMapping(method = RequestMethod.PUT)
-    public StudentDTO updateStudent(@RequestBody StudentDTO studentDTO, Principal principal) {
+    public StudentDTO updateStudent(@RequestBody StudentDTO studentDTO) {
         Student student = studentDTO.convert();
         student = mancipleService.updateStudent(student);
         StudentDTO ret = new StudentDTO(student);
-        ret.setUser(new UserDTO(student.getUser()));
-        ret.getUser().setPerson(new PersonDTO(student.getUser().getPerson()));
+        ret.setPerson(new PersonDTO(student.getPerson()));
         ret.setParent(new ParentDTO(student.getParent()));
-        ret.getParent().setUser(new UserDTO(student.getParent().getUser()));
-        ret.getParent().getUser().setPerson(new PersonDTO(student.getParent().getUser().getPerson()));
+        ret.getParent().setPerson(new PersonDTO(student.getParent().getPerson()));
         return ret;
     }
 

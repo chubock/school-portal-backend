@@ -14,67 +14,15 @@ import java.util.List;
  * Created by Yubar on 10/23/2016.
  */
 
-public class EmployeeDTO implements AbstractDTO<Employee> {
-    private long id;
-    private SchoolDTO school;
-    @Valid
-    @NotNull(groups = {
-            SchoolRegistration.class,
-            EmployeeRegistration.class
-    })
-    private UserDTO user;
-    private List<ClassTimeDTO> classTimes = new ArrayList<>();
+public abstract class EmployeeDTO extends SchoolUserDTO {
 
     public EmployeeDTO() {
     }
 
     public EmployeeDTO(Employee employee) {
-        if (employee != null){
-            this.id = employee.getId();
-        }
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public SchoolDTO getSchool() {
-        return school;
-    }
-
-    public void setSchool(SchoolDTO school) {
-        this.school = school;
-    }
-
-    public UserDTO getUser() {
-        return user;
-    }
-
-    public void setUser(UserDTO user) {
-        this.user = user;
-    }
-
-    public List<ClassTimeDTO> getClassTimes() {
-        return classTimes;
-    }
-
-    public void setClassTimes(List<ClassTimeDTO> classTimes) {
-        this.classTimes = classTimes;
+        super(employee);
     }
 
     @Override
-    public Employee convert() {
-        Employee employee = new Employee();
-        employee.setId(getId());
-        if (getSchool() != null)
-            employee.setSchool(getSchool().convert());
-        if (getUser() != null)
-            employee.setUser(getUser().convert());
-        classTimes.forEach(classTimeDTO -> employee.getClassTimes().add(classTimeDTO.convert()));
-        return employee;
-    }
+    public abstract Employee convert();
 }

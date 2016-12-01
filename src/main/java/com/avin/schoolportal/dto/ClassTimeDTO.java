@@ -12,7 +12,7 @@ public class ClassTimeDTO implements AbstractDTO<ClassTime> {
 
     private long id;
     private ClassroomDTO classroom;
-    private EmployeeDTO teacher;
+    private TeacherDTO teacher;
     private StudyDTO study;
 
     public ClassTimeDTO() {
@@ -38,11 +38,11 @@ public class ClassTimeDTO implements AbstractDTO<ClassTime> {
         this.classroom = classroom;
     }
 
-    public EmployeeDTO getTeacher() {
+    public TeacherDTO getTeacher() {
         return teacher;
     }
 
-    public void setTeacher(EmployeeDTO teacher) {
+    public void setTeacher(TeacherDTO teacher) {
         this.teacher = teacher;
     }
 

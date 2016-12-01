@@ -1,12 +1,10 @@
 package com.avin.schoolportal.dto;
 
 import com.avin.schoolportal.domain.School;
-import com.avin.schoolportal.domain.Student;
 import com.avin.schoolportal.validationgroups.SchoolRegistration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,10 +17,12 @@ public class SchoolDTO implements AbstractDTO<School> {
     @NotNull(groups = SchoolRegistration.class)
     private String name;
     private List<CourseDTO> courses = new ArrayList<>();
-    @Valid
-    @Size(min = 1, groups = SchoolRegistration.class)
-    private List<EmployeeDTO> employees = new ArrayList<>();
+    private List<TeacherDTO> teachers = new ArrayList<>();
+    private List<MancipleDTO> manciples = new ArrayList<>();
     private List<StudentDTO> students = new ArrayList<>();
+    @NotNull(groups = SchoolRegistration.class)
+    @Valid
+    private ManagerDTO manager;
 
     public SchoolDTO() {
     }
@@ -66,12 +66,28 @@ public class SchoolDTO implements AbstractDTO<School> {
         this.courses = courses;
     }
 
-    public List<EmployeeDTO> getEmployees() {
-        return employees;
+    public List<TeacherDTO> getTeachers() {
+        return teachers;
     }
 
-    public void setEmployees(List<EmployeeDTO> employees) {
-        this.employees = employees;
+    public void setTeachers(List<TeacherDTO> teachers) {
+        this.teachers = teachers;
+    }
+
+    public List<MancipleDTO> getManciples() {
+        return manciples;
+    }
+
+    public void setManciples(List<MancipleDTO> manciples) {
+        this.manciples = manciples;
+    }
+
+    public ManagerDTO getManager() {
+        return manager;
+    }
+
+    public void setManager(ManagerDTO manager) {
+        this.manager = manager;
     }
 
     public List<StudentDTO> getStudents() {
@@ -87,7 +103,10 @@ public class SchoolDTO implements AbstractDTO<School> {
         School school = new School(getName());
         school.setId(getId());
         school.setCode(getCode());
-        getEmployees().forEach(employeeDTO -> school.getEmployees().add(employeeDTO.convert()));
+        if (getManager() != null)
+            school.setManager(getManager().convert());
+        getTeachers().forEach(teacherDTO -> school.getTeachers().add(teacherDTO.convert()));
+        getManciples().forEach(mancipleDTO -> school.getManciples().add(mancipleDTO.convert()));
         getCourses().forEach(courseDTO -> school.getCourses().add(courseDTO.convert()));
         getStudents().forEach(studentDTO -> school.getStudents().add(studentDTO.convert()));
         return school;

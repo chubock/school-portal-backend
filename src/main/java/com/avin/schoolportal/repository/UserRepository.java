@@ -14,10 +14,10 @@ import javax.persistence.QueryHint;
 
 public interface UserRepository extends RepositoryWithRefresh<User, Long> {
 
-    @Query("select u from User u join fetch u.roles where u.username = ?")
-    User findOneWithRoles(String username);
-
     @QueryHints({ @QueryHint(name = "org.hibernate.cacheable", value ="true") })
     User findByUsername(String username);
+
+    @Query("select max(u.username) from User u where u.username like ? ")
+    String findLastUsernameLike(String like);
 
 }

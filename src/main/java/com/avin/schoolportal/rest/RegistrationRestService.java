@@ -38,12 +38,6 @@ public class RegistrationRestService {
     public SchoolDTO register(@Validated(SchoolRegistration.class) @RequestBody SchoolDTO schoolDTO) {
         School school = registrationService.register(schoolDTO.convert());
         SchoolDTO ret = new SchoolDTO(school);
-        school.getEmployees().forEach(employee -> {
-            EmployeeDTO employeeDTO = new EmployeeDTO(employee);
-            employeeDTO.setUser(new UserDTO(employee.getUser()));
-            employeeDTO.getUser().setPerson(new PersonDTO(employee.getUser().getPerson()));
-            ret.getEmployees().add(new EmployeeDTO(employee));
-        });
         return ret;
     }
 

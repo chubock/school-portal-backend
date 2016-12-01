@@ -25,11 +25,14 @@ public class School implements Serializable {
     private String name;
     @ManyToMany
     private List<Course> courses = new ArrayList<>();
-    @Size(min = 1, max = 1)
-    @OneToMany(mappedBy = "school")
-    private List<Employee> employees = new ArrayList<>();
-    @OneToMany(mappedBy = "school")
+    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
+    private List<Teacher> teachers = new ArrayList<>();
+    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
+    private List<Manciple> manciples = new ArrayList<>();
+    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
     private List<Student> students = new ArrayList<>();
+    @OneToOne
+    private Manager manager;
 
     public School() {
     }
@@ -70,12 +73,28 @@ public class School implements Serializable {
         this.courses = courses;
     }
 
-    public List<Employee> getEmployees() {
-        return employees;
+    public List<Teacher> getTeachers() {
+        return teachers;
     }
 
-    public void setEmployees(List<Employee> employees) {
-        this.employees = employees;
+    public void setTeachers(List<Teacher> teachers) {
+        this.teachers = teachers;
+    }
+
+    public List<Manciple> getManciples() {
+        return manciples;
+    }
+
+    public void setManciples(List<Manciple> manciples) {
+        this.manciples = manciples;
+    }
+
+    public Manager getManager() {
+        return manager;
+    }
+
+    public void setManager(Manager manager) {
+        this.manager = manager;
     }
 
     public List<Student> getStudents() {

@@ -1,9 +1,12 @@
 package com.avin.schoolportal.rest;
 
 import com.avin.schoolportal.domain.Course;
+import com.avin.schoolportal.domain.Manager;
+import com.avin.schoolportal.domain.SchoolUser;
 import com.avin.schoolportal.domain.User;
 import com.avin.schoolportal.dto.CourseDTO;
-import com.avin.schoolportal.repository.UserRepository;
+import com.avin.schoolportal.dto.ManagerDTO;
+import com.avin.schoolportal.repository.SchoolUserRepository;
 import com.avin.schoolportal.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +29,7 @@ import java.util.stream.Collectors;
 public class SchoolRestService {
 
     @Autowired
-    UserRepository userRepository;
+    SchoolUserRepository schoolUserRepository;
 
     @Autowired
     ManagerService managerService;
@@ -34,7 +37,7 @@ public class SchoolRestService {
     @PreAuthorize("isAuthenticated()")
     @RequestMapping(value = "/courses", method = RequestMethod.GET)
     public List<CourseDTO> getSchoolCourses(Principal principal) {
-        User user = userRepository.findByUsername(principal.getName());
+        SchoolUser user = schoolUserRepository.findByUsername(principal.getName());
         List<CourseDTO> courseDTOs = new ArrayList<>();
         user.getSchool().getCourses().forEach(course -> courseDTOs.add(new CourseDTO(course)));
         return courseDTOs;
@@ -44,7 +47,7 @@ public class SchoolRestService {
     @PreAuthorize("hasAuthority('MANAGER')")
     @RequestMapping(value = "/courses", method = RequestMethod.PUT)
     public List<CourseDTO> updateSchoolCourses(@RequestBody List<CourseDTO> courseDTOs, Principal principal) {
-        User user = userRepository.findByUsername(principal.getName());
+        SchoolUser user = schoolUserRepository.findByUsername(principal.getName());
         List<Course> courses = courseDTOs.stream().map(courseDTO -> courseDTO.convert()).collect(Collectors.toList());
         managerService.updateSchoolCourses(user.getSchool(), courses);
         courseDTOs.clear();

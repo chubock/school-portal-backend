@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 /**
@@ -30,7 +31,7 @@ public class MancipleService {
     PersonRepository personRepository;
 
     @Autowired
-    UserService userService;
+    SchoolUserService schoolUserService;
 
     @Autowired
     ParentRepository parentRepository;
@@ -70,21 +71,19 @@ public class MancipleService {
             classroom = classroomRepository.findOne(classroom.getId());
         student.setClassroom(classroom);
 
-        User user = student.getUser();
-        user.setUsername(student.getSchool().getCode() + '1' + student.getAcademicYear() + student.getCourse().getId());
-        user.setSchool(student.getSchool());
-        user.getRoles().clear();
-        user.getRoles().add(Role.STUDENT);
-        student.setUser(userService.registerUser(user));
-        studentRepository.save(student);
+        String lastUsername = userRepository.findLastUsernameLike(student.getSchool().getCode() + student.getUsernamePrefix() + student.getAcademicYear() + student.getCourse().getId() + "%");
+        if (lastUsername == null)
+            lastUsername = student.getSchool().getCode() + student.getUsernamePrefix() + student.getAcademicYear() + student.getCourse().getId() + "000";
+
+        student.setUsername(new BigDecimal(lastUsername).add(BigDecimal.ONE).toString());
+        student.setSchool(student.getSchool());
+        schoolUserService.registerSchoolUser(student);
 
         Parent parent = student.getParent();
         parent.setSchool(student.getSchool());
-        parent.getUser().setUsername(student.getUser().getUsername().replaceFirst(student.getSchool().getCode() + '2', student.getSchool().getCode() + '2'));
-        parent.getUser().setRoles(new ArrayList<>());
-        parent.getUser().getRoles().add(Role.PARENT);
-        parent.getUser().setPerson(student.getUser().getPerson());
-        parent.setUser(userService.registerUser(parent.getUser()));
+        parent.setUsername(student.getUsername().replaceFirst(student.getSchool().getCode() + '2', student.getSchool().getCode() + '2'));
+        parent.setPerson(student.getPerson());
+        schoolUserService.registerSchoolUser(parent);
 
         return student;
     }
@@ -99,10 +98,6 @@ public class MancipleService {
         if (student.getAcademicYear() != 0 && student.getAcademicYear() != s.getAcademicYear())
             s.setAcademicYear(student.getAcademicYear());
 
-        userService.updateUser(student.getUser());
-        if (! s.getUser().getUsername().startsWith(s.getSchool().getCode() + '1' + s.getAcademicYear() + s.getCourse().getId()))
-            s.getUser().setUsername(s.getSchool().getCode() + '1' + s.getAcademicYear() + s.getCourse().getId());
-
         Classroom classroom = student.getClassroom();
         if (classroom.getId() == 0)
             classroom = classroomRepository.save(classroom);
@@ -110,15 +105,28 @@ public class MancipleService {
             classroom = classroomRepository.findOne(classroom.getId());
         s.setClassroom(classroom);
 
-        userService.updateUser(s.getParent().getUser());
-        if (! s.getParent().getUser().getUsername().startsWith(s.getSchool().getCode() + '2' + s.getAcademicYear() + s.getCourse().getId()))
-            s.getParent().getUser().setUsername(s.getSchool().getCode() + '2' + s.getAcademicYear() + s.getCourse().getId());
+        if (! s.getUsername().startsWith(s.getSchool().getCode() + s.getUsernamePrefix() + s.getAcademicYear() + s.getCourse().getId())) {
+            String lastUsername = userRepository.findLastUsernameLike(s.getSchool().getCode() + s.getUsernamePrefix() + s.getAcademicYear() + s.getCourse().getId() + "%");
+            if (lastUsername == null)
+                lastUsername = s.getSchool().getCode() + s.getUsernamePrefix() + s.getAcademicYear() + s.getCourse().getId() + "000";
+            s.setUsername(new BigDecimal(lastUsername).add(BigDecimal.ONE).toString());
+        }
+
+        schoolUserService.updateSchoolUser(student);
+
+        if (! s.getParent().getUsername().startsWith(s.getSchool().getCode() + s.getParent().getUsernamePrefix() + s.getAcademicYear() + s.getCourse().getId())) {
+            String lastUsername = userRepository.findLastUsernameLike(s.getSchool().getCode() + s.getParent().getUsernamePrefix() + s.getAcademicYear() + s.getCourse().getId() + "%");
+            if (lastUsername == null)
+                lastUsername = s.getSchool().getCode() + s.getParent().getUsernamePrefix() + s.getAcademicYear() + s.getCourse().getId() + "000";
+            s.getParent().setUsername(new BigDecimal(lastUsername).add(BigDecimal.ONE).toString());
+        }
+
         return s;
     }
 
     @PreAuthorize("hasPermission(#student, 'DELETE')")
     public void deleteStudent(Student student){
-        studentRepository.delete(student);
+        schoolUserService.deleteUser(student);
     }
 
 

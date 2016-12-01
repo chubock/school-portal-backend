@@ -18,7 +18,6 @@ public class SecurityRestService {
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/login")
     public Principal getUser(Principal principal) {
-        Authentication authentication;
         return principal;
     }
 }

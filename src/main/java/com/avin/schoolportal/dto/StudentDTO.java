@@ -12,14 +12,8 @@ import javax.validation.constraints.NotNull;
 /**
  * Created by Yubar on 11/20/2016.
  */
-public class StudentDTO implements AbstractDTO<Student> {
+public class StudentDTO extends SchoolUserDTO {
 
-    private long id;
-    @NotNull(groups = {
-            StudentRegistration.class
-    })
-    @Valid
-    private UserDTO user;
     @NotNull(groups = {
             StudentRegistration.class
     })
@@ -30,7 +24,6 @@ public class StudentDTO implements AbstractDTO<Student> {
     })
     @Valid
     private ParentDTO parent;
-    private SchoolDTO school;
     @Min(value = 1390, groups = {
             StudentRegistration.class
     })
@@ -40,26 +33,12 @@ public class StudentDTO implements AbstractDTO<Student> {
     }
 
     public StudentDTO(Student student) {
+        super(student);
         if (student != null) {
-            this.id = student.getId();
-            this.academicYear = student.getAcademicYear();
+            setAcademicYear(student.getAcademicYear());
+            setCourse(new CourseDTO(student.getCourse()));
+            setClassroom(new ClassroomDTO(student.getClassroom()));
         }
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public UserDTO getUser() {
-        return user;
-    }
-
-    public void setUser(UserDTO user) {
-        this.user = user;
     }
 
     public CourseDTO getCourse() {
@@ -86,14 +65,6 @@ public class StudentDTO implements AbstractDTO<Student> {
         this.parent = parent;
     }
 
-    public SchoolDTO getSchool() {
-        return school;
-    }
-
-    public void setSchool(SchoolDTO school) {
-        this.school = school;
-    }
-
     public int getAcademicYear() {
         return academicYear;
     }
@@ -104,19 +75,18 @@ public class StudentDTO implements AbstractDTO<Student> {
 
     @Override
     public Student convert() {
-        Student student = new Student();
-        student.setId(getId());
+        return convert(new Student());
+    }
+
+    protected Student convert(Student student) {
+        super.convert(student);
         student.setAcademicYear(getAcademicYear());
-        if (getUser() != null)
-            student.setUser(getUser().convert());
         if (getCourse() != null)
             student.setCourse(getCourse().convert());
         if (getClassroom() != null)
             student.setClassroom(getClassroom().convert());
         if (getParent() != null)
             student.setParent(getParent().convert());
-        if (getSchool() != null)
-            student.setSchool(getSchool().convert());
         return student;
     }
 }

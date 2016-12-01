@@ -1,9 +1,11 @@
 package com.avin.schoolportal.rest;
 
 import com.avin.schoolportal.domain.Classroom;
+import com.avin.schoolportal.domain.SchoolUser;
 import com.avin.schoolportal.domain.User;
 import com.avin.schoolportal.dto.*;
 import com.avin.schoolportal.repository.ClassroomRepository;
+import com.avin.schoolportal.repository.SchoolUserRepository;
 import com.avin.schoolportal.repository.UserRepository;
 import com.avin.schoolportal.service.MancipleService;
 import com.avin.schoolportal.specification.ClassroomSpecification;
@@ -30,16 +32,16 @@ public class ClassroomRestService {
     ClassroomRepository classroomRepository;
 
     @Autowired
-    UserRepository userRepository;
+    MancipleService mancipleService;
 
     @Autowired
-    MancipleService mancipleService;
+    SchoolUserRepository schoolUserRepository;
 
     @PreAuthorize("hasAuthority('MANCIPLE')")
     @RequestMapping(method = RequestMethod.GET)
     public Page<ClassroomDTO> getClassrooms(@RequestParam Map<String, String> params, Pageable pageable, Principal principal) {
 
-        User user = userRepository.findByUsername(principal.getName());
+        SchoolUser user = schoolUserRepository.findByUsername(principal.getName());
         Page<Classroom> classrooms = classroomRepository.findAll(new ClassroomSpecification(params, user.getSchool()), pageable);
 
         return classrooms.map(classroom -> {
@@ -60,7 +62,7 @@ public class ClassroomRestService {
         classroom.getClassTimes().forEach(classTime -> {
             ClassTimeDTO classTimeDTO = new ClassTimeDTO(classTime);
             classTimeDTO.setStudy(new StudyDTO(classTime.getStudy()));
-            classTimeDTO.setTeacher(new EmployeeDTO(classTime.getTeacher()));
+            classTimeDTO.setTeacher(new TeacherDTO(classTime.getTeacher()));
             classroomDTO.getClassTimes().add(classTimeDTO);
         });
 
@@ -74,7 +76,7 @@ public class ClassroomRestService {
     @PreAuthorize("hasAuthority('MANCIPLE')")
     @RequestMapping(method = RequestMethod.POST)
     public ClassroomDTO registerClassroom(@Validated(ClassroomRegistration.class) @RequestBody ClassroomDTO classroomDTO, Principal principal) {
-        User user = userRepository.findByUsername(principal.getName());
+        SchoolUser user = schoolUserRepository.findByUsername(principal.getName());
         Classroom classroom = classroomDTO.convert();
         classroom.setSchool(user.getSchool());
         classroom = mancipleService.registerClassroom(classroom);

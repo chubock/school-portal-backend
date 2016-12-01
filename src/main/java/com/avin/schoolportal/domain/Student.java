@@ -10,48 +10,22 @@ import java.io.Serializable;
  */
 
 @Entity(name = "Student")
-@Table(name = "STUDENTS")
-public class Student implements Serializable {
+public class Student extends SchoolUser {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    @NotNull
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
-    private User user;
     @OneToOne(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
     private Parent parent;
     @NotNull
-    @ManyToOne(optional = false)
+    @ManyToOne
     private Course course;
     @ManyToOne(fetch = FetchType.LAZY)
     private Classroom classroom;
-    @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private School school;
     private int academicYear;
 
     public Student() {
     }
 
-    public Student(School school) {
-        this.school = school;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+    public Student(String username, String password) {
+        super(username, password);
     }
 
     public Parent getParent() {
@@ -78,20 +52,17 @@ public class Student implements Serializable {
         this.classroom = classroom;
     }
 
-    public School getSchool() {
-        return school;
-    }
-
-    public void setSchool(School school) {
-        this.school = school;
-    }
-
     public int getAcademicYear() {
         return academicYear;
     }
 
     public void setAcademicYear(int academicYear) {
         this.academicYear = academicYear;
+    }
+
+    @Override
+    public String getUsernamePrefix() {
+        return "3";
     }
 
     @Override
@@ -105,7 +76,6 @@ public class Student implements Serializable {
         if (getId() != 0)
             return true;
         if (getId() != student.getId()) return false;
-        if (getUser() != null ? !getUser().equals(student.getUser()) : student.getUser() != null) return false;
         if (getParent() != null ? !getParent().equals(student.getParent()) : student.getParent() != null)
             return false;
         if (getClassroom() != null ? !getClassroom().equals(student.getClassroom()) : student.getClassroom() != null)
@@ -117,7 +87,6 @@ public class Student implements Serializable {
     @Override
     public int hashCode() {
         int result = (int) (getId() ^ (getId() >>> 32));
-        result = 31 * result + (getUser() != null ? getUser().hashCode() : 0);
         result = 31 * result + (getParent() != null ? getParent().hashCode() : 0);
         result = 31 * result + (getClassroom() != null ? getClassroom().hashCode() : 0);
         result = 31 * result + (getSchool() != null ? getSchool().hashCode() : 0);

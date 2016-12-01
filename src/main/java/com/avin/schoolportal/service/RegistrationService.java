@@ -6,9 +6,11 @@ import com.avin.schoolportal.repository.PersonRepository;
 import com.avin.schoolportal.repository.SchoolRepository;
 import com.avin.schoolportal.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * Created by Yubar on 10/28/2016.
@@ -25,9 +27,6 @@ public class RegistrationService {
     SchoolRepository schoolRepository;
 
     @Autowired
-    EmployeeRepository employeeRepository;
-
-    @Autowired
     PersonRepository personRepository;
 
     @Autowired
@@ -35,29 +34,26 @@ public class RegistrationService {
 
     public School register(School school) {
 
-        Employee employee = school.getEmployees().get(0);
+        Manager manager = school.getManager();
+        String lastCode = schoolRepository.findLastCode();
+
+        if (lastCode == null)
+            lastCode = "100";
+        school.setCode(String.valueOf(Integer.valueOf(lastCode) + 1));
 
         school = schoolRepository.save(school);
-        schoolRepository.refresh(school);
 
-        User user = employee.getUser();
-
-        Person person = user.getPerson();
+        Person person = manager.getPerson();
         if (person.getId() == 0)
             person = personRepository.save(person);
         else
             person = personRepository.findOne(person.getId());
 
-        if (!user.getRoles().contains(Role.MANAGER))
-            user.getRoles().add(Role.MANAGER);
-        user.setSchool(school);
-        user.setPerson(person);
-        user.setPassword(userService.encodePassword(user.getPassword()));
-        user = userRepository.save(user);
-
-        employee.setUser(user);
-        employee.setSchool(school);
-        employeeRepository.save(employee);
+        manager.setSchool(school);
+        manager.setPerson(person);
+        manager.setPassword(userService.encodePassword(manager.getPassword()));
+        userRepository.save(manager);
         return school;
+
     }
 }

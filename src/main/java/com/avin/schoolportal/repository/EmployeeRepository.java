@@ -18,7 +18,4 @@ import java.util.List;
  */
 public interface EmployeeRepository extends PagingAndSortingRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
 
-    @EntityGraph(attributePaths = {"user"})
-    Employee findByUser(User user);
-
 }

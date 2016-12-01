@@ -10,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -33,7 +35,7 @@ public class ManagerService {
     EmployeeRepository employeeRepository;
 
     @Autowired
-    UserService userService;
+    SchoolUserService schoolUserService;
 
     @PreAuthorize("hasPermission(#school, 'UPDATE')")
     public void updateSchoolCourses(School school, List<Course> courses) {
@@ -44,26 +46,23 @@ public class ManagerService {
 
     @PreAuthorize("hasPermission(#employee, 'CREATE')")
     public Employee registerEmployee(Employee employee) {
-        User user = employee.getUser();
-        user.setUsername(employee.getSchool().getCode() + '0'); // 0 for employees, 1 for students, 2 for parents.
-        user.setSchool(employee.getSchool());
-        user.getRoles().remove(Role.MANAGER);
-        employee.setUser(userService.registerUser(user));
-        return employeeRepository.save(employee);
+        String lastUsername = userRepository.findLastUsernameLike(employee.getSchool().getCode() + employee.getUsernamePrefix() + "%");
+        if (lastUsername == null)
+            lastUsername = employee.getSchool().getCode() + employee.getUsernamePrefix() + "000";
+        employee.setUsername(new BigDecimal(lastUsername).add(BigDecimal.ONE).toString());
+        employee.setSchool(employee.getSchool());
+        return (Employee) schoolUserService.registerSchoolUser(employee);
     }
 
     @PreAuthorize("hasPermission(#employee, 'UPDATE')")
     public Employee updateEmployee(Employee employee) {
         Employee emp = employeeRepository.findOne(employee.getId());
-        userService.updateUser(emp.getUser());
-        employee.getUser().getRoles().remove(Role.MANAGER);
-        userService.updateUserRoles(emp.getUser().getUsername(), employee.getUser().getRoles());
-        return emp;
+        return (Employee) schoolUserService.updateSchoolUser(emp);
     }
 
     @PreAuthorize("hasPermission(#employee, 'DELETE')")
     public void deleteEmployee(Employee employee) {
-        employeeRepository.delete(employee);
+        schoolUserService.deleteUser(employee);
     }
 
 

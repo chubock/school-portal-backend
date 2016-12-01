@@ -1,9 +1,6 @@
 package com.avin.schoolportal.security.impl;
 
-import com.avin.schoolportal.domain.Parent;
-import com.avin.schoolportal.domain.Role;
-import com.avin.schoolportal.domain.Student;
-import com.avin.schoolportal.domain.User;
+import com.avin.schoolportal.domain.*;
 import com.avin.schoolportal.repository.ParentRepository;
 import com.avin.schoolportal.security.AccessEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +20,18 @@ public class ParentAccessEvaluator implements AccessEvaluator<Parent> {
 
     @Override
     public boolean hasAccess(User user, Parent parent, String permission) {
-        switch (permission) {
-            case "CREATE":
-            case "UPDATE":
-            case "DELETE":
-                return user.getSchool().equals(parent.getSchool()) && user.getRoles().contains(Role.MANCIPLE);
-            case "READ":
-                return user.getSchool().equals(parent.getSchool());
+        if (user instanceof SchoolUser) {
+            SchoolUser schoolUser = (SchoolUser) user;
+            switch (permission) {
+                case "CREATE":
+                case "UPDATE":
+                case "DELETE":
+                    return schoolUser instanceof Manciple && schoolUser.getSchool().equals(parent.getSchool());
+                case "READ":
+                    return schoolUser.getSchool().equals(parent.getSchool());
+            }
         }
+
         return false;
     }
 
