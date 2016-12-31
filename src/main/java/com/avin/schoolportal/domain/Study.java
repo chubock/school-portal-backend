@@ -10,21 +10,15 @@ import java.util.List;
  * Created by Yubar on 11/20/2016.
  */
 
+@Cacheable
 @Entity(name = "Study")
 @Table(name = "STUDIES")
 public class Study implements Serializable{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NotNull
-    @Column(nullable = false)
     private String name;
     private double hours;
-    @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Course course;
-    @OneToMany(mappedBy = "study")
     private List<Book> books = new ArrayList<>();
 
     public Study() {
@@ -45,6 +39,8 @@ public class Study implements Serializable{
         this.course = course;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
@@ -53,6 +49,8 @@ public class Study implements Serializable{
         this.id = id;
     }
 
+    @NotNull
+    @Column(nullable = false)
     public String getName() {
         return name;
     }
@@ -69,6 +67,8 @@ public class Study implements Serializable{
         this.hours = hours;
     }
 
+    @NotNull
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     public Course getCourse() {
         return course;
     }
@@ -77,6 +77,7 @@ public class Study implements Serializable{
         this.course = course;
     }
 
+    @OneToMany(mappedBy = "study")
     public List<Book> getBooks() {
         return books;
     }
@@ -93,16 +94,19 @@ public class Study implements Serializable{
         Study study = (Study) o;
 
         if (getId() != study.getId()) return false;
-        if (getId() != 0)
+        if (getId() > 0)
             return true;
         if (Double.compare(study.getHours(), getHours()) != 0) return false;
         if (getName() != null ? !getName().equals(study.getName()) : study.getName() != null) return false;
-        return getCourse() != null ? getCourse().equals(study.getCourse()) : study.getCourse() == null;
+        if (getCourse() != null ? !getCourse().equals(study.getCourse()) : study.getCourse() != null) return false;
+        return getBooks() != null ? getBooks().equals(study.getBooks()) : study.getBooks() == null;
 
     }
 
     @Override
     public int hashCode() {
+        if (getId() > 0)
+            return (int) getId();
         int result;
         long temp;
         result = (int) (getId() ^ (getId() >>> 32));
@@ -110,6 +114,7 @@ public class Study implements Serializable{
         temp = Double.doubleToLongBits(getHours());
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (getCourse() != null ? getCourse().hashCode() : 0);
+        result = 31 * result + (getBooks() != null ? getBooks().hashCode() : 0);
         return result;
     }
 }

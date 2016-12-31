@@ -11,8 +11,6 @@ import java.io.Serializable;
 @Entity(name = "Parent")
 public class Parent extends SchoolUser {
 
-    @NotNull
-    @OneToOne(fetch = FetchType.LAZY)
     private Student student;
 
     public Parent() {
@@ -22,6 +20,8 @@ public class Parent extends SchoolUser {
         this.student = student;
     }
 
+    @NotNull
+    @OneToOne(fetch = FetchType.LAZY)
     public Student getStudent() {
         return student;
     }
@@ -31,6 +31,7 @@ public class Parent extends SchoolUser {
     }
 
     @Override
+    @Transient
     public String getUsernamePrefix() {
         return "2";
     }

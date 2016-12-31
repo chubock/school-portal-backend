@@ -20,23 +20,19 @@ public class ClassroomAccessEvaluator implements AccessEvaluator<Classroom> {
 
     @Override
     public boolean hasAccess(User user, Classroom classroom, String permission) {
-        if (user instanceof SchoolUser) {
-            SchoolUser schoolUser = (SchoolUser) user;
-            switch (permission) {
-                case "CREATE":
-                case "UPDATE":
-                case "DELETE":
-                    return schoolUser instanceof Manciple && classroom.getSchool().equals(schoolUser.getSchool());
-                case "READ":
-                    return schoolUser.getSchool().equals(classroom.getSchool());
-            }
+        if (permission.equals("CREATE")) {
+            return user instanceof Manciple && classroom.getSchool().equals(((Manciple)user).getSchool());
+        } else {
+            return hasAccess(user, classroom.getId(), permission);
         }
-        return false;
     }
 
     @Override
     public boolean hasAccess(User user, Serializable id, String permission) {
         Classroom classroom = classroomRepository.findOne((Long) id);
-        return hasAccess(user, classroom, permission);
+        if (user instanceof SchoolUser) {
+            return classroom.getSchool().equals(((SchoolUser)user).getSchool()) && (permission.equals("READ") || user instanceof Manager || user instanceof Manciple);
+        }
+        return false;
     }
 }

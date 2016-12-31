@@ -13,23 +13,17 @@ import java.util.List;
  * Created by Yubar on 10/21/2016.
  */
 
+@Cacheable
 @Entity(name = "School")
 @Table(name = "SCHOOLS")
 public class School implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private long id;
     private String code;
-    @NotNull
-    @Column(nullable = false)
     private String name;
-    @ManyToMany
     private List<Course> courses = new ArrayList<>();
-    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
     private List<Teacher> teachers = new ArrayList<>();
-    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
     private List<Manciple> manciples = new ArrayList<>();
-    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
     private List<Student> students = new ArrayList<>();
     @OneToOne
     private Manager manager;
@@ -41,6 +35,8 @@ public class School implements Serializable {
         this.name = name;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
@@ -57,6 +53,8 @@ public class School implements Serializable {
         this.code = code;
     }
 
+    @NotNull
+    @Column(nullable = false)
     public String getName() {
         return name;
     }
@@ -65,6 +63,7 @@ public class School implements Serializable {
         this.name = name;
     }
 
+    @ManyToMany
     public List<Course> getCourses() {
         return courses;
     }
@@ -73,6 +72,7 @@ public class School implements Serializable {
         this.courses = courses;
     }
 
+    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
     public List<Teacher> getTeachers() {
         return teachers;
     }
@@ -81,6 +81,7 @@ public class School implements Serializable {
         this.teachers = teachers;
     }
 
+    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
     public List<Manciple> getManciples() {
         return manciples;
     }
@@ -97,6 +98,7 @@ public class School implements Serializable {
         this.manager = manager;
     }
 
+    @OneToMany(mappedBy = "school", targetEntity = SchoolUser.class)
     public List<Student> getStudents() {
         return students;
     }
@@ -113,16 +115,34 @@ public class School implements Serializable {
         School school = (School) o;
 
         if (getId() != school.getId()) return false;
-        if (getId() != 0)
+        if (getId() > 0)
             return true;
-        return getName() != null ? getName().equals(school.getName()) : school.getName() == null;
+        if (getCode() != null ? !getCode().equals(school.getCode()) : school.getCode() != null) return false;
+        if (getName() != null ? !getName().equals(school.getName()) : school.getName() != null) return false;
+        if (getCourses() != null ? !getCourses().equals(school.getCourses()) : school.getCourses() != null)
+            return false;
+        if (getTeachers() != null ? !getTeachers().equals(school.getTeachers()) : school.getTeachers() != null)
+            return false;
+        if (getManciples() != null ? !getManciples().equals(school.getManciples()) : school.getManciples() != null)
+            return false;
+        if (getStudents() != null ? !getStudents().equals(school.getStudents()) : school.getStudents() != null)
+            return false;
+        return getManager() != null ? getManager().equals(school.getManager()) : school.getManager() == null;
 
     }
 
     @Override
     public int hashCode() {
+        if (getId() > 0)
+            return (int) getId();
         int result = (int) (getId() ^ (getId() >>> 32));
+        result = 31 * result + (getCode() != null ? getCode().hashCode() : 0);
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getCourses() != null ? getCourses().hashCode() : 0);
+        result = 31 * result + (getTeachers() != null ? getTeachers().hashCode() : 0);
+        result = 31 * result + (getManciples() != null ? getManciples().hashCode() : 0);
+        result = 31 * result + (getStudents() != null ? getStudents().hashCode() : 0);
+        result = 31 * result + (getManager() != null ? getManager().hashCode() : 0);
         return result;
     }
 }

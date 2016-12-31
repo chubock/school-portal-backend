@@ -10,22 +10,16 @@ import java.util.List;
  * Created by Yubar on 10/20/2016.
  */
 
+@Cacheable
 @Entity(name = "Course")
 @Table(name = "COURSES")
 public class Course implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private long id;
-    @NotNull
-    @Column(nullable = false)
     private String title;
-    @ManyToOne(fetch = FetchType.LAZY)
     private Course parent;
-    @OneToMany(mappedBy = "parent")
     private List<Course> children = new ArrayList<>();
-    @OneToMany(mappedBy = "course")
     private List<Book> books = new ArrayList<>();
-    @OneToMany(mappedBy = "course")
     private List<Study> studies = new ArrayList<>();
 
     public Course() {
@@ -40,6 +34,8 @@ public class Course implements Serializable {
         this.parent = parent;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
@@ -48,6 +44,8 @@ public class Course implements Serializable {
         this.id = id;
     }
 
+    @NotNull
+    @Column(nullable = false)
     public String getTitle() {
         return title;
     }
@@ -56,6 +54,7 @@ public class Course implements Serializable {
         this.title = title;
     }
 
+    @ManyToOne(fetch = FetchType.LAZY)
     public Course getParent() {
         return parent;
     }
@@ -64,6 +63,7 @@ public class Course implements Serializable {
         this.parent = parent;
     }
 
+    @OneToMany(mappedBy = "parent")
     public List<Course> getChildren() {
         return children;
     }
@@ -72,6 +72,7 @@ public class Course implements Serializable {
         this.children = children;
     }
 
+    @OneToMany(mappedBy = "course")
     public List<Book> getBooks() {
         return books;
     }
@@ -80,6 +81,7 @@ public class Course implements Serializable {
         this.books = books;
     }
 
+    @OneToMany(mappedBy = "course")
     public List<Study> getStudies() {
         return studies;
     }
@@ -96,18 +98,27 @@ public class Course implements Serializable {
         Course course = (Course) o;
 
         if (getId() != course.getId()) return false;
-        if (getId() != 0)
+        if (getId() > 0)
             return true;
         if (getTitle() != null ? !getTitle().equals(course.getTitle()) : course.getTitle() != null) return false;
-        return getParent() != null ? getParent().equals(course.getParent()) : course.getParent() == null;
+        if (getParent() != null ? !getParent().equals(course.getParent()) : course.getParent() != null) return false;
+        if (getChildren() != null ? !getChildren().equals(course.getChildren()) : course.getChildren() != null)
+            return false;
+        if (getBooks() != null ? !getBooks().equals(course.getBooks()) : course.getBooks() != null) return false;
+        return getStudies() != null ? getStudies().equals(course.getStudies()) : course.getStudies() == null;
 
     }
 
     @Override
     public int hashCode() {
+        if (getId() > 0)
+            return (int) getId();
         int result = (int) (getId() ^ (getId() >>> 32));
         result = 31 * result + (getTitle() != null ? getTitle().hashCode() : 0);
         result = 31 * result + (getParent() != null ? getParent().hashCode() : 0);
+        result = 31 * result + (getChildren() != null ? getChildren().hashCode() : 0);
+        result = 31 * result + (getBooks() != null ? getBooks().hashCode() : 0);
+        result = 31 * result + (getStudies() != null ? getStudies().hashCode() : 0);
         return result;
     }
 }

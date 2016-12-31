@@ -68,6 +68,7 @@ public class StudyDTO implements AbstractDTO<Study> {
     @Override
     public Study convert() {
         Study study = new Study(name, hours);
+        study.setId(getId());
         if (course != null)
             study.setCourse(course.convert());
         books.forEach(bookDTO -> study.getBooks().add(bookDTO.convert()));

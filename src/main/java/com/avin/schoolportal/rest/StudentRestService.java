@@ -1,8 +1,8 @@
 package com.avin.schoolportal.rest;
 
-import com.avin.schoolportal.domain.SchoolUser;
-import com.avin.schoolportal.domain.Student;
+import com.avin.schoolportal.domain.*;
 import com.avin.schoolportal.dto.*;
+import com.avin.schoolportal.repository.MancipleRepository;
 import com.avin.schoolportal.repository.SchoolUserRepository;
 import com.avin.schoolportal.repository.StudentRepository;
 import com.avin.schoolportal.service.MancipleService;
@@ -16,8 +16,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,6 +48,27 @@ public class StudentRestService {
     @Autowired
     SchoolUserService schoolUserService;
 
+    @Autowired
+    MancipleRepository mancipleRepository;
+
+    @Autowired
+    FileRenderer fileRenderer;
+
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping(value = "/queryUsername", method = RequestMethod.GET)
+    public Page<StudentDTO> queryByUsername(@RequestParam String key, Principal principal, Pageable pageable) {
+        SchoolUser user = schoolUserRepository.findByUsername(principal.getName());
+        Page<Student> students = studentRepository.findByUsernameLikeAndSchool("%" + key + "%", user.getSchool(), pageable);
+        return students.map(student ->{
+            StudentDTO studentDTO = new StudentDTO(student);
+            if (student.getPictureFile() != null) {
+                studentDTO.setPictureFile(new FileDTO());
+                studentDTO.getPictureFile().setId(student.getPictureFile().getId());
+            }
+            return studentDTO;
+        });
+    }
+
     @PreAuthorize("hasAuthority('MANCIPLE')")
     @RequestMapping(method = RequestMethod.GET)
     public Page<StudentDTO> getStudents(@RequestParam Map<String, String> params, Pageable pageable, Principal principal) {
@@ -52,7 +78,10 @@ public class StudentRestService {
             StudentDTO studentDTO = new StudentDTO(student);
             studentDTO.setCourse(new CourseDTO(student.getCourse()));
             studentDTO.setClassroom(new ClassroomDTO(student.getClassroom()));
-            studentDTO.setPerson(new PersonDTO(student.getPerson()));
+            if (student.getPictureFile() != null) {
+                studentDTO.setPictureFile(new FileDTO());
+                studentDTO.getPictureFile().setId(student.getPictureFile().getId());
+            }
             return studentDTO;
         });
     }
@@ -64,7 +93,10 @@ public class StudentRestService {
         StudentDTO studentDTO = new StudentDTO(student);
         studentDTO.setCourse(new CourseDTO(student.getCourse()));
         studentDTO.setClassroom(new ClassroomDTO(student.getClassroom()));
-        studentDTO.setPerson(new PersonDTO(student.getPerson()));
+        if (student.getPictureFile() != null) {
+            studentDTO.setPictureFile(new FileDTO());
+            studentDTO.getPictureFile().setId(student.getPictureFile().getId());
+        }
         return studentDTO;
     }
 
@@ -75,7 +107,13 @@ public class StudentRestService {
         StudentDTO studentDTO = new StudentDTO(student);
         studentDTO.setCourse(new CourseDTO(student.getCourse()));
         studentDTO.setClassroom(new ClassroomDTO(student.getClassroom()));
-        studentDTO.setPerson(new PersonDTO(student.getPerson()));
+        if (student.getClassroom() != null)
+            studentDTO.getClassroom().setCourse(new CourseDTO(student.getClassroom().getCourse()));
+        studentDTO.setParent(new ParentDTO(student.getParent()));
+        if (student.getPictureFile() != null) {
+            studentDTO.setPictureFile(new FileDTO());
+            studentDTO.getPictureFile().setId(student.getPictureFile().getId());
+        }
         return studentDTO;
     }
 
@@ -91,9 +129,11 @@ public class StudentRestService {
         String parentPassword = userService.resetPassword(student.getParent().getUsername());
         schoolUserService.sendRegistrationEmail(student.getParent(), parentPassword);
         StudentDTO ret = new StudentDTO(student);
-        ret.setPerson(new PersonDTO(student.getPerson()));
         ret.setParent(new ParentDTO(student.getParent()));
-        ret.getParent().setPerson(new PersonDTO(student.getParent().getPerson()));
+        ret.setCourse(new CourseDTO(student.getCourse()));
+        ret.setClassroom(new ClassroomDTO(student.getClassroom()));
+        if (student.getClassroom() != null)
+            ret.getClassroom().setCourse(new CourseDTO(student.getClassroom().getCourse()));
         return ret;
     }
 
@@ -103,9 +143,11 @@ public class StudentRestService {
         Student student = studentDTO.convert();
         student = mancipleService.updateStudent(student);
         StudentDTO ret = new StudentDTO(student);
-        ret.setPerson(new PersonDTO(student.getPerson()));
         ret.setParent(new ParentDTO(student.getParent()));
-        ret.getParent().setPerson(new PersonDTO(student.getParent().getPerson()));
+        ret.setCourse(new CourseDTO(student.getCourse()));
+        ret.setClassroom(new ClassroomDTO(student.getClassroom()));
+        if (student.getClassroom() != null)
+            ret.getClassroom().setCourse(new CourseDTO(student.getClassroom().getCourse()));
         return ret;
     }
 
@@ -114,6 +156,26 @@ public class StudentRestService {
     public void deleteStudent(@PathVariable long id) {
         Student student = studentRepository.findOne(id);
         mancipleService.deleteStudent(student);
+    }
+
+    @PreAuthorize("hasPermission(#id, 'Student', 'READ')")
+    @RequestMapping(value = {"/{id}/pictureFile", "/{id}/pictureFile/*"}, method = RequestMethod.GET)
+    public void getQuestionFile(@PathVariable long id, HttpServletResponse response) throws IOException {
+        Student student = studentRepository.findOne(id);
+        fileRenderer.renderFile(student == null ? null : student.getPictureFile(), response);
+    }
+
+    @PreAuthorize("hasPermission(#id, 'Student', 'UPDATE')")
+    @RequestMapping(value = {"/{id}/pictureFile"}, method = RequestMethod.POST)
+    public FileDTO uploadPictureFile(MultipartHttpServletRequest request, @PathVariable long id, Principal principal) throws IOException {
+        Manciple manciple = mancipleRepository.findByUsername(principal.getName());
+        Student student = studentRepository.getOne(id);
+        MultipartFile file = request.getFile("file");
+        File f = new File(file);
+        f.setSchool(manciple.getSchool());
+        student.setPictureFile(f);
+        schoolUserService.updateSchoolUserPictureFile(student);
+        return new FileDTO(f);
     }
 
 }

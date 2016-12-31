@@ -14,24 +14,14 @@ import java.util.List;
 @Table(name = "CLASSROOMS")
 public class Classroom implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NotNull
-    @Column(nullable = false)
     private String name;
-    @Column(nullable = false)
     private int academicYear;
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
     private Course course;
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
     private School school;
-    @OneToMany
     private List<Student> students = new ArrayList<>();
-    @OneToMany(mappedBy = "classroom")
     private List<ClassTime> classTimes = new ArrayList<>();
+    List<Exam> exams = new ArrayList<>();
 
     public Classroom() {
     }
@@ -58,6 +48,8 @@ public class Classroom implements Serializable {
         this.school = school;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
@@ -66,6 +58,8 @@ public class Classroom implements Serializable {
         this.id = id;
     }
 
+    @NotNull
+    @Column(nullable = false)
     public String getName() {
         return name;
     }
@@ -74,6 +68,7 @@ public class Classroom implements Serializable {
         this.name = name;
     }
 
+    @Column(nullable = false)
     public int getAcademicYear() {
         return academicYear;
     }
@@ -82,6 +77,8 @@ public class Classroom implements Serializable {
         this.academicYear = academicYear;
     }
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     public Course getCourse() {
         return course;
     }
@@ -90,6 +87,8 @@ public class Classroom implements Serializable {
         this.course = course;
     }
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     public School getSchool() {
         return school;
     }
@@ -98,6 +97,7 @@ public class Classroom implements Serializable {
         this.school = school;
     }
 
+    @OneToMany(mappedBy = "classroom")
     public List<Student> getStudents() {
         return students;
     }
@@ -106,12 +106,22 @@ public class Classroom implements Serializable {
         this.students = students;
     }
 
+    @OneToMany(mappedBy = "classroom")
     public List<ClassTime> getClassTimes() {
         return classTimes;
     }
 
     public void setClassTimes(List<ClassTime> classTimes) {
         this.classTimes = classTimes;
+    }
+
+    @ManyToMany(mappedBy = "classrooms")
+    public List<Exam> getExams() {
+        return exams;
+    }
+
+    public void setExams(List<Exam> exams) {
+        this.exams = exams;
     }
 
     @Override
@@ -122,23 +132,34 @@ public class Classroom implements Serializable {
         Classroom classroom = (Classroom) o;
 
         if (getId() != classroom.getId()) return false;
-        if (getId() != 0)
+        if (getId() > 0)
             return true;
         if (getAcademicYear() != classroom.getAcademicYear()) return false;
         if (getName() != null ? !getName().equals(classroom.getName()) : classroom.getName() != null) return false;
         if (getCourse() != null ? !getCourse().equals(classroom.getCourse()) : classroom.getCourse() != null)
             return false;
-        return getSchool() != null ? getSchool().equals(classroom.getSchool()) : classroom.getSchool() == null;
+        if (getSchool() != null ? !getSchool().equals(classroom.getSchool()) : classroom.getSchool() != null)
+            return false;
+        if (getStudents() != null ? !getStudents().equals(classroom.getStudents()) : classroom.getStudents() != null)
+            return false;
+        if (getClassTimes() != null ? !getClassTimes().equals(classroom.getClassTimes()) : classroom.getClassTimes() != null)
+            return false;
+        return getExams() != null ? getExams().equals(classroom.getExams()) : classroom.getExams() == null;
 
     }
 
     @Override
     public int hashCode() {
+        if (getId() > 0)
+            return (int) getId();
         int result = (int) (getId() ^ (getId() >>> 32));
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         result = 31 * result + getAcademicYear();
         result = 31 * result + (getCourse() != null ? getCourse().hashCode() : 0);
         result = 31 * result + (getSchool() != null ? getSchool().hashCode() : 0);
+        result = 31 * result + (getStudents() != null ? getStudents().hashCode() : 0);
+        result = 31 * result + (getClassTimes() != null ? getClassTimes().hashCode() : 0);
+        result = 31 * result + (getExams() != null ? getExams().hashCode() : 0);
         return result;
     }
 }

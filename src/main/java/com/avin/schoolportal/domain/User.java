@@ -14,25 +14,18 @@ import java.util.List;
  * Created by Yubar on 10/21/2016.
  */
 
+@Cacheable
 @Entity(name = "User")
 @Table(name = "USERS")
 @Inheritance
 public abstract class User implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(unique = true)
     private String username;
-    @NotNull
     private String password;
-    @Column(nullable = false)
     private boolean enabled = true;
-    @Column(nullable = false)
     private boolean expired = false;
-    @Column(nullable = false)
     private boolean locked = false;
-    @Column(nullable = false)
     private boolean passwordExpired = false;
     private String locale = "fa";
 
@@ -48,6 +41,8 @@ public abstract class User implements Serializable {
         this.password = password;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
@@ -56,6 +51,7 @@ public abstract class User implements Serializable {
         this.id = id;
     }
 
+    @Column(unique = true)
     public String getUsername() {
         return username;
     }
@@ -64,6 +60,7 @@ public abstract class User implements Serializable {
         this.username = username;
     }
 
+    @NotNull
     public String getPassword() {
         return password;
     }
@@ -72,6 +69,7 @@ public abstract class User implements Serializable {
         this.password = password;
     }
 
+    @Column(nullable = false)
     public boolean isEnabled() {
         return enabled;
     }
@@ -80,6 +78,7 @@ public abstract class User implements Serializable {
         this.enabled = enabled;
     }
 
+    @Column(nullable = false)
     public boolean isExpired() {
         return expired;
     }
@@ -88,6 +87,7 @@ public abstract class User implements Serializable {
         this.expired = expired;
     }
 
+    @Column(nullable = false)
     public boolean isLocked() {
         return locked;
     }
@@ -96,6 +96,7 @@ public abstract class User implements Serializable {
         this.locked = locked;
     }
 
+    @Column(nullable = false)
     public boolean isPasswordExpired() {
         return passwordExpired;
     }
@@ -120,7 +121,7 @@ public abstract class User implements Serializable {
         User user = (User) o;
 
         if (getId() != user.getId()) return false;
-        if (getId() != 0)
+        if (getId() > 0)
             return true;
         if (isEnabled() != user.isEnabled()) return false;
         if (isExpired() != user.isExpired()) return false;
@@ -136,6 +137,8 @@ public abstract class User implements Serializable {
 
     @Override
     public int hashCode() {
+        if (getId() > 0)
+            return (int) getId();
         int result = (int) (getId() ^ (getId() >>> 32));
         result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
         result = 31 * result + (getPassword() != null ? getPassword().hashCode() : 0);

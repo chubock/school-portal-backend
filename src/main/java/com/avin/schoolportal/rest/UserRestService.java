@@ -68,7 +68,7 @@ public class UserRestService {
         }
     }
 
-    @PreAuthorize("hasAuthority('MANAGER') AND hasPermission(#username, 'SchoolUser', 'UPDATE')")
+    @PreAuthorize("hasPermission(#username, 'User', 'UPDATE')")
     @RequestMapping(value = "/{username}/resetPassword", method = RequestMethod.POST)
     public void resetPassword(@PathVariable String username){
         SchoolUser user = schoolUserRepository.findByUsername(username);
@@ -76,7 +76,7 @@ public class UserRestService {
         userService.sendPasswordEmail(user.getEmail(), newPass);
     }
 
-    @PreAuthorize("hasAuthority('MANAGER') AND hasPermission(#username, 'SchoolUser', 'UPDATE')")
+    @PreAuthorize("hasPermission(#username, 'User', 'UPDATE')")
     @RequestMapping(value = "/{username}/lock", method = RequestMethod.POST)
     public void lockUser(@PathVariable String username){
         User user = schoolUserRepository.findByUsername(username);
@@ -84,7 +84,7 @@ public class UserRestService {
             userService.lockUser(username);
     }
 
-    @PreAuthorize("hasAuthority('MANAGER') AND hasPermission(#username, 'SchoolUser', 'UPDATE')")
+    @PreAuthorize("hasPermission(#username, 'User', 'UPDATE')")
     @RequestMapping(value = "/{username}/unlock", method = RequestMethod.POST)
     public void unlockUser(@PathVariable String username){
         User user = schoolUserRepository.findByUsername(username);

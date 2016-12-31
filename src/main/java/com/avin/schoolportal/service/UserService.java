@@ -87,7 +87,7 @@ public class UserService {
         }
     }
 
-    @PreAuthorize("hasAuthority('MANAGER') AND hasPermission(#username, 'User', 'UPDATE')")
+    @PreAuthorize("hasPermission(#username, 'User', 'UPDATE')")
     public String resetPassword(String username) {
         User user = userRepository.findByUsername(username);
         String newPassword = generatePassword();
@@ -96,13 +96,13 @@ public class UserService {
         return newPassword;
     }
 
-    @PreAuthorize("hasAuthority('MANAGER') AND hasPermission(#username, 'User', 'UPDATE')")
+    @PreAuthorize("hasPermission(#username, 'User', 'UPDATE')")
     public void lockUser(String username) {
         User user = userRepository.findByUsername(username);
         user.setLocked(true);
     }
 
-    @PreAuthorize("hasAuthority('MANAGER') AND hasPermission(#username, 'User', 'UPDATE')")
+    @PreAuthorize("hasPermission(#username, 'User', 'UPDATE')")
     public void unlockUser(String username) {
         User user = userRepository.findByUsername(username);
         user.setLocked(false);

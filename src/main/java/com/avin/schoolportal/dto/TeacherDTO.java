@@ -1,12 +1,8 @@
 package com.avin.schoolportal.dto;
 
-import com.avin.schoolportal.domain.Employee;
+import com.avin.schoolportal.domain.Handout;
 import com.avin.schoolportal.domain.Teacher;
-import com.avin.schoolportal.validationgroups.EmployeeRegistration;
-import com.avin.schoolportal.validationgroups.SchoolRegistration;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +12,7 @@ import java.util.List;
 
 public class TeacherDTO extends EmployeeDTO {
     private List<ClassTimeDTO> classTimes = new ArrayList<>();
+    private List<HandoutDTO> handouts = new ArrayList<>();
 
     public TeacherDTO() {
     }
@@ -32,6 +29,14 @@ public class TeacherDTO extends EmployeeDTO {
         this.classTimes = classTimes;
     }
 
+    public List<HandoutDTO> getHandouts() {
+        return handouts;
+    }
+
+    public void setHandouts(List<HandoutDTO> handouts) {
+        this.handouts = handouts;
+    }
+
     @Override
     public Teacher convert() {
         return convert(new Teacher());
@@ -40,6 +45,7 @@ public class TeacherDTO extends EmployeeDTO {
     protected Teacher convert(Teacher teacher) {
         super.convert(teacher);
         getClassTimes().forEach(classTimeDTO -> teacher.getClassTimes().add(classTimeDTO.convert()));
+        getHandouts().forEach(handoutDTO -> teacher.getHandouts().add(handoutDTO.convert()));
         return teacher;
     }
 }

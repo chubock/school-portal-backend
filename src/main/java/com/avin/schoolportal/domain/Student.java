@@ -4,6 +4,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Yubar on 11/20/2016.
@@ -12,14 +14,12 @@ import java.io.Serializable;
 @Entity(name = "Student")
 public class Student extends SchoolUser {
 
-    @OneToOne(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
     private Parent parent;
-    @NotNull
-    @ManyToOne
     private Course course;
-    @ManyToOne(fetch = FetchType.LAZY)
     private Classroom classroom;
     private int academicYear;
+    private double lastYearGrade = 17.0;
+    private List<Violation> violations = new ArrayList<>();
 
     public Student() {
     }
@@ -28,6 +28,7 @@ public class Student extends SchoolUser {
         super(username, password);
     }
 
+    @OneToOne(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
     public Parent getParent() {
         return parent;
     }
@@ -36,6 +37,8 @@ public class Student extends SchoolUser {
         this.parent = parent;
     }
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     public Course getCourse() {
         return course;
     }
@@ -44,6 +47,7 @@ public class Student extends SchoolUser {
         this.course = course;
     }
 
+    @ManyToOne(fetch = FetchType.LAZY)
     public Classroom getClassroom() {
         return classroom;
     }
@@ -60,36 +64,26 @@ public class Student extends SchoolUser {
         this.academicYear = academicYear;
     }
 
+    public double getLastYearGrade() {
+        return lastYearGrade;
+    }
+
+    public void setLastYearGrade(double lastYearGrade) {
+        this.lastYearGrade = lastYearGrade;
+    }
+
+    @ManyToMany(mappedBy = "students")
+    public List<Violation> getViolations() {
+        return violations;
+    }
+
+    public void setViolations(List<Violation> violations) {
+        this.violations = violations;
+    }
+
     @Override
+    @Transient
     public String getUsernamePrefix() {
         return "3";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Student)) return false;
-
-        Student student = (Student) o;
-
-        if (getId() != student.getId()) return false;
-        if (getId() != 0)
-            return true;
-        if (getId() != student.getId()) return false;
-        if (getParent() != null ? !getParent().equals(student.getParent()) : student.getParent() != null)
-            return false;
-        if (getClassroom() != null ? !getClassroom().equals(student.getClassroom()) : student.getClassroom() != null)
-            return false;
-        return getSchool() != null ? getSchool().equals(student.getSchool()) : student.getSchool() == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (getId() ^ (getId() >>> 32));
-        result = 31 * result + (getParent() != null ? getParent().hashCode() : 0);
-        result = 31 * result + (getClassroom() != null ? getClassroom().hashCode() : 0);
-        result = 31 * result + (getSchool() != null ? getSchool().hashCode() : 0);
-        return result;
     }
 }

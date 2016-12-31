@@ -9,5 +9,6 @@ import java.util.List;
  * Created by Yubar on 10/28/2016.
  */
 public interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
-    public List<Person> findByNationalIdStartingWith(String key);
+    Person findByNationalId(String nationalId);
+    List<Person> findByNationalIdStartingWith(String key);
 }

@@ -20,24 +20,23 @@ public class ParentAccessEvaluator implements AccessEvaluator<Parent> {
 
     @Override
     public boolean hasAccess(User user, Parent parent, String permission) {
-        if (user instanceof SchoolUser) {
-            SchoolUser schoolUser = (SchoolUser) user;
-            switch (permission) {
-                case "CREATE":
-                case "UPDATE":
-                case "DELETE":
-                    return schoolUser instanceof Manciple && schoolUser.getSchool().equals(parent.getSchool());
-                case "READ":
-                    return schoolUser.getSchool().equals(parent.getSchool());
+        if (permission.equals("CREATE")) {
+            if (user instanceof SchoolUser) {
+                return ((SchoolUser)user).getSchool().equals(parent.getSchool()) && (user instanceof Manciple || user instanceof Manager);
+            } else {
+                return false;
             }
+        } else {
+            return hasAccess(user, parent.getId(), permission);
         }
-
-        return false;
     }
 
     @Override
     public boolean hasAccess(User user, Serializable id, String permission) {
         Parent parent = parentRepository.findOne((Long) id);
-        return hasAccess(user, parent, permission);
+        if (user instanceof SchoolUser) {
+            return ((SchoolUser)user).getSchool().equals(parent.getSchool()) && (permission.equals("READ") || user instanceof Manciple || user instanceof Manager);
+        }
+        return false;
     }
 }

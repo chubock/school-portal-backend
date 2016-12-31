@@ -1,8 +1,9 @@
 package com.avin.schoolportal.dto;
 
 import com.avin.schoolportal.domain.ClassTime;
-import com.avin.schoolportal.domain.Classroom;
+import com.avin.schoolportal.domain.WeekDay;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,12 +15,20 @@ public class ClassTimeDTO implements AbstractDTO<ClassTime> {
     private ClassroomDTO classroom;
     private TeacherDTO teacher;
     private StudyDTO study;
+    private double from;
+    private double to;
+    private WeekDay weekDay;
 
     public ClassTimeDTO() {
     }
 
     public ClassTimeDTO(ClassTime classTime){
-        this.id = classTime.getId();
+        if (classTime != null) {
+            setId(classTime.getId());
+            setWeekDay(classTime.getWeekDay());
+            setFrom(classTime.getFrom());
+            setTo(classTime.getTo());
+        }
     }
 
     public long getId() {
@@ -54,16 +63,43 @@ public class ClassTimeDTO implements AbstractDTO<ClassTime> {
         this.study = study;
     }
 
+    public WeekDay getWeekDay() {
+        return weekDay;
+    }
+
+    public void setWeekDay(WeekDay weekDay) {
+        this.weekDay = weekDay;
+    }
+
+    public double getFrom() {
+        return from;
+    }
+
+    public void setFrom(double from) {
+        this.from = from;
+    }
+
+    public double getTo() {
+        return to;
+    }
+
+    public void setTo(double to) {
+        this.to = to;
+    }
+
     @Override
     public ClassTime convert() {
         ClassTime classTime = new ClassTime();
         classTime.setId(id);
-        if (classroom != null)
-            classTime.setClassroom(classroom.convert());
-        if (teacher != null)
-            classTime.setTeacher(teacher.convert());
-        if (study != null)
-            classTime.setStudy(study.convert());
+        classTime.setFrom(getFrom());
+        classTime.setTo(getTo());
+        classTime.setWeekDay(getWeekDay());
+        if (getClassroom() != null)
+            classTime.setClassroom(getClassroom().convert());
+        if (getTeacher() != null)
+            classTime.setTeacher(getTeacher().convert());
+        if (getStudy() != null)
+            classTime.setStudy(getStudy().convert());
         return classTime;
     }
 }

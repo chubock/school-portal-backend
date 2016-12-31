@@ -1,6 +1,5 @@
 package com.avin.schoolportal.security.impl;
 
-import com.avin.schoolportal.domain.Manager;
 import com.avin.schoolportal.domain.SchoolUser;
 import com.avin.schoolportal.domain.User;
 import com.avin.schoolportal.repository.UserRepository;
@@ -25,14 +24,18 @@ public class UserAccessEvaluator implements AccessEvaluator<User> {
 
     @Override
     public boolean hasAccess(User user, User target, String permission) {
-        if (target instanceof SchoolUser)
-            return schoolUserAccessEvaluator.hasAccess(user, (SchoolUser) target, permission);
-        return false;
+        return hasAccess(user, target.getId(), permission);
     }
 
     @Override
-    public boolean hasAccess(User user, Serializable username, String permission) {
-        User u = userRepository.findByUsername((String) username);
-        return hasAccess(user, u, permission);
+    public boolean hasAccess(User user, Serializable serializable, String permission) {
+        User target = null;
+        if (serializable instanceof String)
+            target = userRepository.findByUsername((String)serializable);
+        else
+            target = userRepository.findOne((Long) serializable);
+        if (target instanceof SchoolUser)
+            return schoolUserAccessEvaluator.hasAccess(user, target.getId(), permission);
+        return false;
     }
 }

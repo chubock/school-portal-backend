@@ -2,6 +2,7 @@ package com.avin.schoolportal.dto;
 
 import com.avin.schoolportal.domain.Classroom;
 import com.avin.schoolportal.domain.Employee;
+import com.avin.schoolportal.domain.Exam;
 import com.avin.schoolportal.validationgroups.ClassroomRegistration;
 
 import javax.validation.Valid;
@@ -32,14 +33,17 @@ public class ClassroomDTO implements AbstractDTO<Classroom> {
     private SchoolDTO school;
     private List<StudentDTO> students = new ArrayList<>();
     private List<ClassTimeDTO> classTimes = new ArrayList<>();
+    private List<ExamDTO> exams = new ArrayList<>();
 
     public ClassroomDTO() {
     }
 
     public ClassroomDTO(Classroom classroom) {
-        this.id = classroom.getId();
-        this.name = classroom.getName();
-        this.academicYear = classroom.getAcademicYear();
+        if (classroom != null) {
+            setId(classroom.getId());
+            setName(classroom.getName());
+            setAcademicYear(classroom.getAcademicYear());
+        }
     }
 
     public long getId() {
@@ -98,6 +102,14 @@ public class ClassroomDTO implements AbstractDTO<Classroom> {
         this.classTimes = classTimes;
     }
 
+    public List<ExamDTO> getExams() {
+        return exams;
+    }
+
+    public void setExams(List<ExamDTO> exams) {
+        this.exams = exams;
+    }
+
     @Override
     public Classroom convert() {
         Classroom classroom = new Classroom(this.name, this.academicYear);
@@ -107,6 +119,7 @@ public class ClassroomDTO implements AbstractDTO<Classroom> {
         if (school != null)
             classroom.setSchool(school.convert());
         classTimes.forEach(classTimeDTO -> classroom.getClassTimes().add(classTimeDTO.convert()));
+        exams.forEach(examDTO -> classroom.getExams().add(examDTO.convert()));
         return classroom;
     }
 }

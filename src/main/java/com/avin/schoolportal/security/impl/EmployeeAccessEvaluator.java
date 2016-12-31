@@ -21,22 +21,20 @@ public class EmployeeAccessEvaluator implements AccessEvaluator<Employee> {
 
     @Override
     public boolean hasAccess(User user, Employee employee, String permission) {
-        if (user instanceof SchoolUser) {
-            SchoolUser schoolUser = (SchoolUser) user;
-            switch (permission) {
-                case "CREATE" :
-                case "READ" :
-                case "UPDATE":
-                case "DELETE":
-                    return schoolUser instanceof Manager && employee.getSchool().equals(schoolUser.getSchool());
-            }
+        if (permission.equals("CREATE")) {
+            return user instanceof Manager && employee.getSchool().equals(((Manager)user).getSchool());
+        } else {
+            return hasAccess(user, employee.getId(), permission);
         }
-        return false;
     }
 
     @Override
     public boolean hasAccess(User user, Serializable id, String permission) {
         Employee employee = repository.findOne((Long) id);
-        return hasAccess(user, employee, permission);
+        if (user instanceof SchoolUser) {
+            SchoolUser schoolUser = (SchoolUser) user;
+            return schoolUser.getSchool().equals(employee.getSchool()) && ((permission.equals("READ") || schoolUser instanceof Manager));
+        }
+        return false;
     }
 }

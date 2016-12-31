@@ -8,22 +8,17 @@ import java.io.Serializable;
  * Created by Yubar on 11/19/2016.
  */
 
+@Cacheable
 @Entity(name = "Book")
 @Table(name = "BOOKS")
 public class Book implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NotNull
-    @Column(nullable = false)
     private String name;
-    @Column(unique = true)
     private String code;
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Course course;
-    @ManyToOne(fetch = FetchType.LAZY)
     private Study study;
+    private File cover;
 
     public Book() {
     }
@@ -43,6 +38,8 @@ public class Book implements Serializable {
         this.course = course;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
@@ -51,6 +48,8 @@ public class Book implements Serializable {
         this.id = id;
     }
 
+    @NotNull
+    @Column(nullable = false)
     public String getName() {
         return name;
     }
@@ -59,6 +58,7 @@ public class Book implements Serializable {
         this.name = name;
     }
 
+    @Column(unique = true)
     public String getCode() {
         return code;
     }
@@ -67,6 +67,7 @@ public class Book implements Serializable {
         this.code = code;
     }
 
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     public Course getCourse() {
         return course;
     }
@@ -75,12 +76,22 @@ public class Book implements Serializable {
         this.course = course;
     }
 
+    @ManyToOne(fetch = FetchType.LAZY)
     public Study getStudy() {
         return study;
     }
 
     public void setStudy(Study study) {
         this.study = study;
+    }
+
+    @OneToOne(cascade = CascadeType.REMOVE)
+    public File getCover() {
+        return cover;
+    }
+
+    public void setCover(File cover) {
+        this.cover = cover;
     }
 
     @Override
@@ -91,7 +102,7 @@ public class Book implements Serializable {
         Book book = (Book) o;
 
         if (getId() != book.getId()) return false;
-        if (getId() != 0)
+        if (getId() > 0)
             return true;
         if (getName() != null ? !getName().equals(book.getName()) : book.getName() != null) return false;
         if (getCode() != null ? !getCode().equals(book.getCode()) : book.getCode() != null) return false;
@@ -102,6 +113,8 @@ public class Book implements Serializable {
 
     @Override
     public int hashCode() {
+        if (getId() > 0)
+            return (int) getId();
         int result = (int) (getId() ^ (getId() >>> 32));
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         result = 31 * result + (getCode() != null ? getCode().hashCode() : 0);

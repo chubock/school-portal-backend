@@ -15,23 +15,13 @@ import java.util.Date;
 @Entity(name = "Person")
 @Table(name = "PERSONS")
 public class Person implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private long id;
-    @NotNull
-    @Column(nullable = false)
     private String firstName;
-    @NotNull
-    @Column(nullable = false)
     private String lastName;
     private String fatherName;
-    @NotNull
-    @Pattern(regexp = "\\d{10}")
-    @Column(nullable = false, unique = true)
     private String nationalId;
-    @Temporal(TemporalType.DATE)
     private Date birthday;
-    @Enumerated
     private Gender gender = Gender.MALE;
 
     public Person() {
@@ -52,6 +42,8 @@ public class Person implements Serializable {
         this.birthday = birthday;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
@@ -60,6 +52,8 @@ public class Person implements Serializable {
         this.id = id;
     }
 
+    @NotNull
+    @Column(nullable = false)
     public String getFirstName() {
         return firstName;
     }
@@ -68,6 +62,8 @@ public class Person implements Serializable {
         this.firstName = firstName;
     }
 
+    @NotNull
+    @Column(nullable = false)
     public String getLastName() {
         return lastName;
     }
@@ -84,6 +80,9 @@ public class Person implements Serializable {
         this.fatherName = fatherName;
     }
 
+    @NotNull
+    @Pattern(regexp = "\\d{10}")
+    @Column(nullable = false, unique = true)
     public String getNationalId() {
         return nationalId;
     }
@@ -92,6 +91,7 @@ public class Person implements Serializable {
         this.nationalId = nationalId;
     }
 
+    @Temporal(TemporalType.DATE)
     public Date getBirthday() {
         return birthday;
     }
@@ -100,6 +100,7 @@ public class Person implements Serializable {
         this.birthday = birthday;
     }
 
+    @Enumerated
     public Gender getGender() {
         return gender;
     }
@@ -116,7 +117,7 @@ public class Person implements Serializable {
         Person person = (Person) o;
 
         if (getId() != person.getId()) return false;
-        if (getId() != 0)
+        if (getId() > 0)
             return true;
         if (getFirstName() != null ? !getFirstName().equals(person.getFirstName()) : person.getFirstName() != null)
             return false;
@@ -134,6 +135,8 @@ public class Person implements Serializable {
 
     @Override
     public int hashCode() {
+        if (getId() > 0)
+            return (int) getId();
         int result = (int) (getId() ^ (getId() >>> 32));
         result = 31 * result + (getFirstName() != null ? getFirstName().hashCode() : 0);
         result = 31 * result + (getLastName() != null ? getLastName().hashCode() : 0);

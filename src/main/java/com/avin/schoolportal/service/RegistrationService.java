@@ -43,16 +43,19 @@ public class RegistrationService {
 
         school = schoolRepository.save(school);
 
-        Person person = manager.getPerson();
-        if (person.getId() == 0)
-            person = personRepository.save(person);
-        else
-            person = personRepository.findOne(person.getId());
-
         manager.setSchool(school);
-        manager.setPerson(person);
         manager.setPassword(userService.encodePassword(manager.getPassword()));
         userRepository.save(manager);
+
+        Person person = personRepository.findByNationalId(manager.getNationalId());
+        if (person == null) {
+            person = new Person(manager.getFirstName(), manager.getLastName(), manager.getBirthday());
+            person.setGender(manager.getGender());
+            person.setNationalId(manager.getNationalId());
+            person.setFatherName(manager.getFatherName());
+            personRepository.save(person);
+        }
+
         return school;
 
     }

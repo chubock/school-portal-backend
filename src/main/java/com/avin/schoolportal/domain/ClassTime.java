@@ -3,6 +3,8 @@ package com.avin.schoolportal.domain;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Yubar on 11/20/2016.
@@ -11,18 +13,14 @@ import java.io.Serializable;
 @Entity(name = "ClassTime")
 @Table(name = "CLASS_TIMES")
 public class ClassTime implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private long id;
-    @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Classroom classroom;
-    @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     private Teacher teacher;
-    @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     private Study study;
+    private WeekDay weekDay;
+    private double from;
+    private double to;
 
     public ClassTime() {
     }
@@ -42,6 +40,8 @@ public class ClassTime implements Serializable {
         this.study = study;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
@@ -50,6 +50,8 @@ public class ClassTime implements Serializable {
         this.id = id;
     }
 
+    @NotNull
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     public Classroom getClassroom() {
         return classroom;
     }
@@ -58,6 +60,8 @@ public class ClassTime implements Serializable {
         this.classroom = classroom;
     }
 
+    @NotNull
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     public Teacher getTeacher() {
         return teacher;
     }
@@ -66,12 +70,42 @@ public class ClassTime implements Serializable {
         this.teacher = teacher;
     }
 
+    @NotNull
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     public Study getStudy() {
         return study;
     }
 
     public void setStudy(Study study) {
         this.study = study;
+    }
+
+    @Enumerated
+    @Column(nullable = false)
+    public WeekDay getWeekDay() {
+        return weekDay;
+    }
+
+    public void setWeekDay(WeekDay weekDay) {
+        this.weekDay = weekDay;
+    }
+
+    @Column(name = "START_FROM")
+    public double getFrom() {
+        return from;
+    }
+
+    public void setFrom(double from) {
+        this.from = from;
+    }
+
+    @Column(name = "END_TO")
+    public double getTo() {
+        return to;
+    }
+
+    public void setTo(double to) {
+        this.to = to;
     }
 
     @Override
@@ -82,22 +116,34 @@ public class ClassTime implements Serializable {
         ClassTime classTime = (ClassTime) o;
 
         if (getId() != classTime.getId()) return false;
-        if (getId() != 0)
+        if (getId() > 0)
             return true;
+        if (Double.compare(classTime.getFrom(), getFrom()) != 0) return false;
+        if (Double.compare(classTime.getTo(), getTo()) != 0) return false;
         if (getClassroom() != null ? !getClassroom().equals(classTime.getClassroom()) : classTime.getClassroom() != null)
             return false;
         if (getTeacher() != null ? !getTeacher().equals(classTime.getTeacher()) : classTime.getTeacher() != null)
             return false;
-        return getStudy() != null ? getStudy().equals(classTime.getStudy()) : classTime.getStudy() == null;
+        if (getStudy() != null ? !getStudy().equals(classTime.getStudy()) : classTime.getStudy() != null) return false;
+        return getWeekDay() == classTime.getWeekDay();
 
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (getId() ^ (getId() >>> 32));
+        if (getId() > 0)
+            return (int) getId();
+        int result;
+        long temp;
+        result = (int) (getId() ^ (getId() >>> 32));
         result = 31 * result + (getClassroom() != null ? getClassroom().hashCode() : 0);
         result = 31 * result + (getTeacher() != null ? getTeacher().hashCode() : 0);
         result = 31 * result + (getStudy() != null ? getStudy().hashCode() : 0);
+        result = 31 * result + (getWeekDay() != null ? getWeekDay().hashCode() : 0);
+        temp = Double.doubleToLongBits(getFrom());
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(getTo());
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 }

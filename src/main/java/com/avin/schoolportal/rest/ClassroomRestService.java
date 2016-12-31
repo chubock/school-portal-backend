@@ -1,24 +1,24 @@
 package com.avin.schoolportal.rest;
 
-import com.avin.schoolportal.domain.Classroom;
-import com.avin.schoolportal.domain.SchoolUser;
-import com.avin.schoolportal.domain.User;
+import com.avin.schoolportal.domain.*;
 import com.avin.schoolportal.dto.*;
-import com.avin.schoolportal.repository.ClassroomRepository;
-import com.avin.schoolportal.repository.SchoolUserRepository;
-import com.avin.schoolportal.repository.UserRepository;
+import com.avin.schoolportal.repository.*;
 import com.avin.schoolportal.service.MancipleService;
 import com.avin.schoolportal.specification.ClassroomSpecification;
 import com.avin.schoolportal.validationgroups.ClassroomRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * Created by Yubar on 11/24/2016.
@@ -37,7 +37,19 @@ public class ClassroomRestService {
     @Autowired
     SchoolUserRepository schoolUserRepository;
 
-    @PreAuthorize("hasAuthority('MANCIPLE')")
+    @Autowired
+    StudentRepository studentRepository;
+
+    @Autowired
+    TeacherRepository teacherRepository;
+
+    @Autowired
+    StudyRepository studyRepository;
+
+    @Autowired
+    ClassTimeRepository classTimeRepository;
+
+    @PreAuthorize("isAuthenticated()")
     @RequestMapping(method = RequestMethod.GET)
     public Page<ClassroomDTO> getClassrooms(@RequestParam Map<String, String> params, Pageable pageable, Principal principal) {
 
@@ -58,17 +70,15 @@ public class ClassroomRestService {
 
         Classroom classroom = classroomRepository.findOne(id);
         ClassroomDTO classroomDTO = new ClassroomDTO(classroom);
+        classroomDTO.setCourse(new CourseDTO(classroom.getCourse()));
 
-        classroom.getClassTimes().forEach(classTime -> {
+        List<ClassTime> classTimes = classTimeRepository.findByClassroom(classroom, new Sort("weekDay", "from"));
+        for (ClassTime classTime : classTimes) {
             ClassTimeDTO classTimeDTO = new ClassTimeDTO(classTime);
             classTimeDTO.setStudy(new StudyDTO(classTime.getStudy()));
             classTimeDTO.setTeacher(new TeacherDTO(classTime.getTeacher()));
             classroomDTO.getClassTimes().add(classTimeDTO);
-        });
-
-        classroom.getStudents().forEach(student -> {
-            classroomDTO.getStudents().add(new StudentDTO(student));
-        });
+        }
 
         return classroomDTO;
     }
@@ -102,5 +112,10 @@ public class ClassroomRestService {
         mancipleService.deleteClassroom(classroom);
     }
 
+    @RequestMapping(value = "/{id}/students")
+    public List<StudentDTO> getStudents(@PathVariable long id) {
+        Classroom classroom = classroomRepository.findOne(id);
+        return classroom.getStudents().stream().map(StudentDTO::new).collect(Collectors.toList());
+    }
 
 }

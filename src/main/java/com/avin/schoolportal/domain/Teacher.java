@@ -13,12 +13,13 @@ import java.util.List;
 @Entity(name = "Teacher")
 public class Teacher extends Employee{
 
-    @OneToMany(mappedBy = "teacher")
     private List<ClassTime> classTimes = new ArrayList<>();
+    private List<Handout> handouts = new ArrayList<>();
 
     public Teacher() {
     }
 
+    @OneToMany(mappedBy = "teacher")
     public List<ClassTime> getClassTimes() {
         return classTimes;
     }
@@ -27,7 +28,17 @@ public class Teacher extends Employee{
         this.classTimes = classTimes;
     }
 
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.REMOVE)
+    public List<Handout> getHandouts() {
+        return handouts;
+    }
+
+    public void setHandouts(List<Handout> handouts) {
+        this.handouts = handouts;
+    }
+
     @Override
+    @Transient
     public String getUsernamePrefix() {
         return "1";
     }
